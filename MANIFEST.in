@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include alhamdent *.css
+recursive-include alhamdent *.csv
+recursive-include alhamdent *.html
+recursive-include alhamdent *.ico
+recursive-include alhamdent *.js
+recursive-include alhamdent *.json
+recursive-include alhamdent *.md
+recursive-include alhamdent *.png
+recursive-include alhamdent *.py
+recursive-include alhamdent *.svg
+recursive-include alhamdent *.txt
+recursive-exclude alhamdent *.pyc
