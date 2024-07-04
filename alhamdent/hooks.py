@@ -125,7 +125,11 @@ app_license = "MIT"
 #		"on_trash": "method"
 #	}
 # }
-
+doc_events = {
+	"Purchase Invoice": {
+		"before_submit": "alhamdent.overrides.purchase_invoice.before_submit",
+	}
+}
 # Scheduled Tasks
 # ---------------
 
