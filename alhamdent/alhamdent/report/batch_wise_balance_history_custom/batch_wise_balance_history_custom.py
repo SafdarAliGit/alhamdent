@@ -46,6 +46,7 @@ def execute(filters=None):
 								wh,
 								batch,
 								batch_rate.rate,
+								batch_rate.rate * batch_rate.batch_qty,
 								flt(qty_dict.opening_qty, float_precision),
 								flt(qty_dict.in_qty, float_precision),
 								flt(qty_dict.out_qty, float_precision),
@@ -67,6 +68,7 @@ def get_columns(filters):
 		+ [_("Warehouse") + ":Link/Warehouse:100"]
 		+ [_("Batch") + ":Link/Batch:100"]
 		+ [_("Rate") + ":Float:90"]
+		+ [_("Amount") + ":Float:90"]
 		+ [_("Opening Qty") + ":Float:90"]
 		+ [_("In Qty") + ":Float:80"]
 		+ [_("Out Qty") + ":Float:80"]
