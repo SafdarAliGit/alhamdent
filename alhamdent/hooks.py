@@ -128,7 +128,11 @@ app_license = "MIT"
 doc_events = {
 	"Purchase Invoice": {
 		"before_submit": "alhamdent.overrides.purchase_invoice.before_submit",
-	}
+	},
+
+	"Purchase Receipt": {
+		"before_submit": "alhamdent.overrides.purchase_receipt.before_submit",
+	},
 }
 # Scheduled Tasks
 # ---------------
