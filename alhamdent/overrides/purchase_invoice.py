@@ -6,6 +6,7 @@ def before_submit(doc, method):
         if item.batch_no:
             batch = frappe.get_doc("Batch", item.batch_no)
             batch.rate = item.base_rate
+            batch.file_no = item.file_no
             try:
                 batch.save()
                 # frappe.db.commit()
