@@ -29,7 +29,7 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Purchase Invoice" : "public/js/purchase_invoice.js"}
+doctype_js = {"Purchase Invoice": "public/js/purchase_invoice.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -126,13 +126,16 @@ doctype_js = {"Purchase Invoice" : "public/js/purchase_invoice.js"}
 #	}
 # }
 doc_events = {
-	"Purchase Invoice": {
-		"before_submit": "alhamdent.overrides.purchase_invoice.before_submit",
-	},
+    "Purchase Invoice": {
+        "before_submit": "alhamdent.overrides.purchase_invoice.before_submit",
+    },
 
-	"Purchase Receipt": {
-		"before_submit": "alhamdent.overrides.purchase_receipt.before_submit",
-	},
+    "Purchase Receipt": {
+        "before_submit": "alhamdent.overrides.purchase_receipt.before_submit",
+    },
+    "Sales Invoice": {
+        "before_submit": "alhamdent.overrides.sales_invoice.before_submit",
+    },
 }
 # Scheduled Tasks
 # ---------------
