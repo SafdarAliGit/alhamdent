@@ -67,6 +67,12 @@ frappe.query_reports["Batch-Wise Balance History Custom"] = {
 				};
 			}
 		},
+		{
+			"fieldname":"file_no",
+			"label": __("File No"),
+			"fieldtype": "Link",
+			"options": "FILE NO"
+		}
 	],
 	"formatter": function (value, row, column, data, default_formatter) {
 		if (column.fieldname == "Batch" && data && !!data["Batch"]) {
