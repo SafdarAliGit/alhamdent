@@ -63,7 +63,7 @@ def get_columns():
 
 def get_conditions(filters, doctype):
     conditions = []
-    if doctype in ["pi","lcv"]:
+    if doctype in ["pii","lcv"]:
         conditions.append(f"`{doctype}`.file_no = %(file_no)s")
     return " AND ".join(conditions)
 
@@ -92,7 +92,7 @@ def get_data(filters):
                     pi.name
                 ORDER BY
                     pi.posting_date ASC
-            """.format(conditions=get_conditions(filters, "pi"))
+            """.format(conditions=get_conditions(filters, "pii"))
 
 
     landed_cost = """
