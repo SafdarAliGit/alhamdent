@@ -24,7 +24,7 @@ def get_columns():
             "width": 150
         },
         {
-            "label": _("<b>Supplier</b>"),
+            "label": _("<b>Supplier/Customer</b>"),
             "fieldname": "supplier",
             "fieldtype": "Link",
             "options": "Supplier",
@@ -63,7 +63,7 @@ def get_columns():
 
 def get_conditions(filters, doctype):
     conditions = []
-    if doctype in ["pii","lcv"]:
+    if doctype in ["pii", "sii", "lcv"]:
         conditions.append(f"`{doctype}`.file_no = %(file_no)s")
     return " AND ".join(conditions)
 
@@ -94,6 +94,28 @@ def get_data(filters):
                     pi.posting_date ASC
             """.format(conditions=get_conditions(filters, "pii"))
 
+    sale = """
+                SELECT
+                   '' AS heading,
+                    si.posting_date,
+                    si.customer AS supplier,
+                    si.name AS voucher_no,
+                    SUM(sii.qty) AS qty,
+                    AVG(sii.rate) AS rate,
+                    si.grand_total AS amount
+                FROM
+                    `tabSales Invoice` AS si
+                LEFT JOIN
+                    `tabSales Invoice Item` AS sii ON si.name = sii.parent
+                WHERE
+                    {conditions} 
+                    AND 
+                    si.docstatus = 1
+                GROUP BY
+                    si.name
+                ORDER BY
+                    si.posting_date ASC
+            """.format(conditions=get_conditions(filters, "sii"))
 
     landed_cost = """
                 SELECT
@@ -115,12 +137,15 @@ def get_data(filters):
                 """.format(conditions=get_conditions(filters, "lcv"))
 
     purchase_result = frappe.db.sql(purchase, filters, as_dict=1)
+    sale_result = frappe.db.sql(sale, filters, as_dict=1)
     landed_cost_result = frappe.db.sql(landed_cost, filters, as_dict=1)
     #
     # ====================CALCULATING TOTAL IN PURCHASE====================
-    purchase_header_dict = [{'heading': '<b><u>Purchase Detail</b></u>','posting_date': '', 'supplier': '', 'voucher_no': '', 'qty': '',
+    purchase_header_dict = [
+        {'heading': '<b><u>Purchase Detail</b></u>', 'posting_date': '', 'supplier': '', 'voucher_no': '', 'qty': '',
          'rate': '', 'amount': ''}]
-    purchase_total_dict = {'heading': '<b>Total</b>', 'posting_date': '-------', 'supplier': '-------', 'voucher_no': '-------',
+    purchase_total_dict = {'heading': '<b>Total</b>', 'posting_date': '-------', 'supplier': '-------',
+                           'voucher_no': '-------',
                            'qty': None, 'rate': None, ',' 'amount': None}
     total_qty = 0
     total_rate = 0
@@ -142,6 +167,33 @@ def get_data(filters):
     purchase_result = purchase_header_dict + purchase_result
     purchase_result.append(purchase_total_dict)
     # ====================CALCULATING TOTAL IN PURCHASE END====================
+    # ====================CALCULATING TOTAL IN SALES====================
+    sales_header_dict = [
+        {'heading': '<b><u>Sales Detail</b></u>', 'posting_date': '', 'supplier': '', 'voucher_no': '', 'qty': '',
+         'rate': '', 'amount': ''}]
+    sales_total_dict = {'heading': '<b>Total</b>', 'posting_date': '-------', 'supplier': '-------',
+                        'voucher_no': '-------',
+                        'qty': None, 'rate': None, ',' 'amount': None}
+    total_qty = 0
+    total_rate = 0
+    total_amount = 0
+    for sale in sale_result:
+        total_qty += sale.qty
+        total_rate += sale.rate
+        total_amount += sale.amount
+    if len(sale_result) != 0:
+        avg_rate = total_rate / len(sale_result)
+    else:
+        # Handle the case where len(purchase_result) is zero
+        avg_rate = 0  # or any other appropriate value
+
+    sales_total_dict['qty'] = total_qty
+    sales_total_dict['rate'] = avg_rate
+    sales_total_dict['amount'] = total_amount
+
+    sale_result = sales_header_dict + sale_result
+    sale_result.append(sales_total_dict)
+    # ====================CALCULATING TOTAL IN SALES END====================
 
     # # ====================CALCULATING TOTAL IN LANDED COST VOUCHER====================
     landed_cost_header_dict = [
@@ -153,8 +205,8 @@ def get_data(filters):
          'rate': '-------', 'amount': ''}
     ]
     landed_cost_total_dict = {'heading': '<b>Total</b>', 'posting_date': '-------', 'supplier': '-------',
-                           'voucher_no': '-------',
-                           'qty': '-------', 'rate':'-------' , 'amount': None}
+                              'voucher_no': '-------',
+                              'qty': '-------', 'rate': '-------', 'amount': None}
 
     total_lc_amount = 0
     for lcr in landed_cost_result:
@@ -168,12 +220,13 @@ def get_data(filters):
     # SUMMARY
     total_cost = total_amount + total_lc_amount
     total_cost_summary = {'heading': '<b>Total Cost</b>', 'posting_date': '-------', 'supplier': '-------',
-                              'voucher_no': '-------',
-                              'qty': '-------', 'rate': '-------', ',' 'amount': None}
-    total_cost_summary['amount'] = total_cost
-    cost_after_expense_summary = {'heading': '<b>Cost after Expense</b>', 'posting_date': '-------', 'supplier': '-------',
                           'voucher_no': '-------',
                           'qty': '-------', 'rate': '-------', ',' 'amount': None}
+    total_cost_summary['amount'] = total_cost
+    cost_after_expense_summary = {'heading': '<b>Cost after Expense</b>', 'posting_date': '-------',
+                                  'supplier': '-------',
+                                  'voucher_no': '-------',
+                                  'qty': '-------', 'rate': '-------', ',' 'amount': None}
     if total_qty != 0:
         cost_after_expense_summary['amount'] = total_cost / total_qty
     else:
@@ -185,6 +238,7 @@ def get_data(filters):
     landed_cost_result.append(cost_after_expense_summary)
 
     data.extend(purchase_result)
+    data.extend(sale_result)
 
     data.extend(landed_cost_result)
 
