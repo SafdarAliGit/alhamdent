@@ -37,6 +37,7 @@ def execute(filters=None):
 				for batch in sorted(iwb_map[item][wh]):
 					qty_dict = iwb_map[item][wh][batch]
 					batch_rate = frappe.get_doc("Batch", batch)
+					valuation_rate = frappe.get_value("Stock Ledger Entry", filters={"batch_no":batch}, fieldname="valuation_rate")
 					if qty_dict.opening_qty or qty_dict.in_qty or qty_dict.out_qty or qty_dict.bal_qty:
 						data.append(
 							[
@@ -45,7 +46,7 @@ def execute(filters=None):
 								item_map[item]["description"],
 								wh,
 								batch,
-								batch_rate.rate if batch_rate.rate else 0,
+								valuation_rate if valuation_rate else 0,
 								batch_rate.file_no,
 								flt(qty_dict.opening_qty, float_precision),
 								flt(qty_dict.in_qty, float_precision),
