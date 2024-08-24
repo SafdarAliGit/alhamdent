@@ -69,7 +69,7 @@ def get_columns(filters):
 		+ [_("Description") + "::150"]
 		+ [_("Warehouse") + ":Link/Warehouse:100"]
 		+ [_("Batch") + ":Link/Batch:100"]
-		+ [_("Rate") + ":Float:90"]
+		+ [_("Rate") + ":Currency:90"]
 		+ [_("File No") + ":Link/FILE NO:90"]
 		+ [_("Opening Qty") + ":Float:90"]
 		+ [_("In Qty") + ":Float:80"]
