@@ -78,7 +78,7 @@ def get_data(filters):
                     pi.supplier,
                     pi.name AS voucher_no,
                     SUM(pii.qty) AS qty,
-                    AVG(pii.rate) AS rate,
+                    AVG(pii.base_rate) AS rate,
                     pi.grand_total AS amount
                 FROM
                     `tabPurchase Invoice` AS pi
