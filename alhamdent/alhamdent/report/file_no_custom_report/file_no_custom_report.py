@@ -79,7 +79,7 @@ def get_data(filters):
                     pi.name AS voucher_no,
                     SUM(pii.qty) AS qty,
                     AVG(pii.base_rate) AS rate,
-                    pi.grand_total AS amount
+                    pi.base_total AS amount
                 FROM
                     `tabPurchase Invoice` AS pi
                 LEFT JOIN
