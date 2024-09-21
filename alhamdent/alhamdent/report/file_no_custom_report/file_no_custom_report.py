@@ -63,7 +63,7 @@ def get_columns():
 
 def get_conditions(filters, doctype):
     conditions = []
-    if doctype in ["pii", "sii", "lcv"]:
+    if doctype in ["pii", "sii", "lcv","jea"]:
         conditions.append(f"`{doctype}`.file_no = %(file_no)s")
     return " AND ".join(conditions)
 
@@ -136,9 +136,31 @@ def get_data(filters):
                     lcv.docstatus = 1
                 """.format(conditions=get_conditions(filters, "lcv"))
 
+    je = """
+                    SELECT
+                       '' AS heading,
+                       '' AS posting_date,
+                        jea.party AS supplier,
+                        jea.parent AS voucher_no,
+                        jea.account AS  qty,
+                        '' AS rate,
+                        jea.debit_in_account_currency AS amount
+                    FROM
+                        `tabJournal Entry` AS je
+                    LEFT JOIN
+                        `tabJournal Entry Account` AS jea ON je.name = jea.parent
+                    WHERE
+                        {conditions} 
+                        AND 
+                        jea.docstatus = 1
+                        AND 
+                        jea.debit_in_account_currency > 0
+                """.format(conditions=get_conditions(filters, "jea"))
+
     purchase_result = frappe.db.sql(purchase, filters, as_dict=1)
     sale_result = frappe.db.sql(sale, filters, as_dict=1)
     landed_cost_result = frappe.db.sql(landed_cost, filters, as_dict=1)
+    je_result = frappe.db.sql(je, filters, as_dict=1)
     #
     # ====================CALCULATING TOTAL IN PURCHASE====================
     purchase_header_dict = [
@@ -216,6 +238,22 @@ def get_data(filters):
 
     landed_cost_result = landed_cost_header_dict + landed_cost_result
 
+    # ====================CALCULATING TOTAL IN JOURNAL ENTRY====================
+    je_header_dict = [
+        {'heading': '<b><u>Journal Entries</b></u>', 'posting_date': '', 'supplier': '', 'voucher_no': '', 'qty': '',
+         'rate': '', 'amount': ''}]
+    je_total_dict = {'heading': '<b>Total</b>', 'posting_date': '-------', 'supplier': '-------',
+                           'voucher_no': '-------',
+                           'qty': None, 'rate': None, ',' 'amount': None}
+    total_amount = 0
+    for je in je_result:
+        total_amount += je.amount
+
+    je_total_dict['amount'] = total_amount
+
+    je_result = je_header_dict + je_result
+    je_result.append(je_total_dict)
+
     # # ====================CALCULATING TOTAL IN LANDED COST VOUCHER END====================
     # SUMMARY
     total_cost = total_amount + total_lc_amount
@@ -238,8 +276,13 @@ def get_data(filters):
     landed_cost_result.append(cost_after_expense_summary)
 
     data.extend(purchase_result)
+
     data.extend(sale_result)
 
+    data.extend(je_result)
+
     data.extend(landed_cost_result)
+
+
 
     return data
