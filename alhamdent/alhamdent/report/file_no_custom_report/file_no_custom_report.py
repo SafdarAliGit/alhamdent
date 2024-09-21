@@ -139,10 +139,10 @@ def get_data(filters):
     je = """
                     SELECT
                        '' AS heading,
-                       '' AS posting_date,
-                        jea.party AS supplier,
+                        je.posting_date,
+                        jea.account AS supplier,
                         jea.parent AS voucher_no,
-                        jea.account AS  qty,
+                        '' AS  qty,
                         '' AS rate,
                         jea.debit_in_account_currency AS amount
                     FROM
@@ -171,11 +171,11 @@ def get_data(filters):
                            'qty': None, 'rate': None, ',' 'amount': None}
     total_qty = 0
     total_rate = 0
-    total_amount = 0
+    total_purchase_amount = 0
     for purchase in purchase_result:
         total_qty += purchase.qty
         total_rate += purchase.rate
-        total_amount += purchase.amount
+        total_purchase_amount += purchase.amount
     if len(purchase_result) != 0:
         avg_rate = total_rate / len(purchase_result)
     else:
@@ -184,7 +184,7 @@ def get_data(filters):
 
     purchase_total_dict['qty'] = total_qty
     purchase_total_dict['rate'] = avg_rate
-    purchase_total_dict['amount'] = total_amount
+    purchase_total_dict['amount'] = total_purchase_amount
 
     purchase_result = purchase_header_dict + purchase_result
     purchase_result.append(purchase_total_dict)
@@ -198,11 +198,11 @@ def get_data(filters):
                         'qty': None, 'rate': None, ',' 'amount': None}
     total_qty = 0
     total_rate = 0
-    total_amount = 0
+    total_sale_amount = 0
     for sale in sale_result:
         total_qty += sale.qty
         total_rate += sale.rate
-        total_amount += sale.amount
+        total_sale_amount += sale.amount
     if len(sale_result) != 0:
         avg_rate = total_rate / len(sale_result)
     else:
@@ -211,7 +211,7 @@ def get_data(filters):
 
     sales_total_dict['qty'] = total_qty
     sales_total_dict['rate'] = avg_rate
-    sales_total_dict['amount'] = total_amount
+    sales_total_dict['amount'] = total_sale_amount
 
     sale_result = sales_header_dict + sale_result
     sale_result.append(sales_total_dict)
@@ -245,19 +245,19 @@ def get_data(filters):
     je_total_dict = {'heading': '<b>Total</b>', 'posting_date': '-------', 'supplier': '-------',
                            'voucher_no': '-------',
                            'qty': None, 'rate': None, ',' 'amount': None}
-    total_amount = 0
+    total_je_amount = 0
     for je in je_result:
-        total_amount += je.amount
+        total_je_amount += je.amount
 
-    je_total_dict['amount'] = total_amount
+    je_total_dict['amount'] = total_je_amount
 
     je_result = je_header_dict + je_result
     je_result.append(je_total_dict)
 
     # # ====================CALCULATING TOTAL IN LANDED COST VOUCHER END====================
     # SUMMARY
-    total_cost = total_amount + total_lc_amount
-    total_cost_summary = {'heading': '<b>Total Cost</b>', 'posting_date': '-------', 'supplier': '-------',
+    total_cost = total_purchase_amount + total_je_amount
+    total_cost_summary = {'heading': '<b>Total Expense</b>', 'posting_date': '-------', 'supplier': '-------',
                           'voucher_no': '-------',
                           'qty': '-------', 'rate': '-------', ',' 'amount': None}
     total_cost_summary['amount'] = total_cost
@@ -268,12 +268,17 @@ def get_data(filters):
     if total_qty != 0:
         cost_after_expense_summary['amount'] = total_cost / total_qty
     else:
-        # Handle the case where total_qty is zero
-        cost_after_expense_summary['amount'] = 0  # or any other appropriate value
+        cost_after_expense_summary['amount'] = 0
+
+    profit_of_file = {'heading': '<b>Profit Of File</b>', 'posting_date': '-------', 'supplier': '-------',
+                          'voucher_no': '-------',
+                          'qty': '-------', 'rate': '-------', ',' 'amount': None}
+    profit_of_file['amount'] = (total_sale_amount if total_sale_amount else 0) - (total_cost if total_cost else 0)
 
     landed_cost_result.append(landed_cost_total_dict)
     landed_cost_result.append(total_cost_summary)
     landed_cost_result.append(cost_after_expense_summary)
+    landed_cost_result.append(profit_of_file)
 
     data.extend(purchase_result)
 
@@ -282,7 +287,5 @@ def get_data(filters):
     data.extend(je_result)
 
     data.extend(landed_cost_result)
-
-
 
     return data
