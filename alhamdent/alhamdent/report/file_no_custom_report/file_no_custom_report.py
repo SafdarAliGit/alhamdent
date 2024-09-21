@@ -79,7 +79,8 @@ def get_data(filters):
                     pi.name AS voucher_no,
                     SUM(pii.qty) AS qty,
                     AVG(pii.base_rate) AS rate,
-                    pi.base_total AS amount
+                    pi.base_total AS amount,
+                    pi.conversion_rate
                 FROM
                     `tabPurchase Invoice` AS pi
                 LEFT JOIN
@@ -171,16 +172,21 @@ def get_data(filters):
                            'qty': None, 'rate': None, ',' 'amount': None}
     total_qty = 0
     total_rate = 0
+    total_conversion_rate = 0
     total_purchase_amount = 0
+    avg_conversion_rate = 0
     for purchase in purchase_result:
         total_qty += purchase.qty
         total_rate += purchase.rate
         total_purchase_amount += purchase.amount
+        total_conversion_rate += purchase.conversion_rate
     if len(purchase_result) != 0:
         avg_rate = total_rate / len(purchase_result)
+        avg_conversion_rate = total_conversion_rate / len(purchase_result)
     else:
         # Handle the case where len(purchase_result) is zero
         avg_rate = 0  # or any other appropriate value
+        avg_conversion_rate = 0
 
     purchase_total_dict['qty'] = total_qty
     purchase_total_dict['rate'] = avg_rate
@@ -269,16 +275,22 @@ def get_data(filters):
         cost_after_expense_summary['amount'] = total_cost / total_qty
     else:
         cost_after_expense_summary['amount'] = 0
-
+    # PROFIT OF FILE
     profit_of_file = {'heading': '<b>Profit Of File</b>', 'posting_date': '-------', 'supplier': '-------',
                           'voucher_no': '-------',
                           'qty': '-------', 'rate': '-------', ',' 'amount': None}
     profit_of_file['amount'] = (total_sale_amount if total_sale_amount else 0) - (total_cost if total_cost else 0)
+    # AVERAGE CONVERSION RATE
+    purchase_conversion_rate = {'heading': '<b>Conversion Rate</b>', 'posting_date': '-------', 'supplier': '-------',
+                      'voucher_no': '-------',
+                      'qty': '-------', 'rate': '-------', ',' 'amount': None}
+    purchase_conversion_rate['amount'] = avg_conversion_rate
 
     landed_cost_result.append(landed_cost_total_dict)
     landed_cost_result.append(total_cost_summary)
-    landed_cost_result.append(cost_after_expense_summary)
     landed_cost_result.append(profit_of_file)
+    landed_cost_result.append(purchase_conversion_rate)
+    landed_cost_result.append(cost_after_expense_summary)
 
     data.extend(purchase_result)
 
