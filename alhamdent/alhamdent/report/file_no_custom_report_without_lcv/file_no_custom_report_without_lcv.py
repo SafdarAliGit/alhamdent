@@ -293,11 +293,8 @@ def get_data(filters):
     landed_cost_result.append(cost_after_expense_summary)
 
     data.extend(purchase_result)
-
-    data.extend(sale_result)
-
     data.extend(je_result)
-
+    data.extend(sale_result)
     data.extend(landed_cost_result)
 
     return data
