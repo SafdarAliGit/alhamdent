@@ -118,24 +118,24 @@ def get_data(filters):
                     si.posting_date ASC
             """.format(conditions=get_conditions(filters, "sii"))
 
-    landed_cost = """
-                SELECT
-                   '' AS heading,
-                    lcv.posting_date,
-                    lctc.description AS qty,
-                    lcv.name AS voucher_no,
-                    lctc.expense_account AS supplier,
-                    '' AS rate,
-                    lctc.amount
-                FROM
-                    `tabLanded Cost Voucher` AS lcv
-                LEFT JOIN
-                    `tabLanded Cost Taxes and Charges` AS lctc ON lcv.name = lctc.parent
-                WHERE
-                    {conditions} 
-                    AND 
-                    lcv.docstatus = 1
-                """.format(conditions=get_conditions(filters, "lcv"))
+    # landed_cost = """
+    #             SELECT
+    #                '' AS heading,
+    #                 lcv.posting_date,
+    #                 lctc.description AS qty,
+    #                 lcv.name AS voucher_no,
+    #                 lctc.expense_account AS supplier,
+    #                 '' AS rate,
+    #                 lctc.amount
+    #             FROM
+    #                 `tabLanded Cost Voucher` AS lcv
+    #             LEFT JOIN
+    #                 `tabLanded Cost Taxes and Charges` AS lctc ON lcv.name = lctc.parent
+    #             WHERE
+    #                 {conditions}
+    #                 AND
+    #                 lcv.docstatus = 1
+    #             """.format(conditions=get_conditions(filters, "lcv"))
 
     je = """
                     SELECT
@@ -160,7 +160,7 @@ def get_data(filters):
 
     purchase_result = frappe.db.sql(purchase, filters, as_dict=1)
     sale_result = frappe.db.sql(sale, filters, as_dict=1)
-    landed_cost_result = frappe.db.sql(landed_cost, filters, as_dict=1)
+    # landed_cost_result = frappe.db.sql(landed_cost, filters, as_dict=1)
     je_result = frappe.db.sql(je, filters, as_dict=1)
     #
     # ====================CALCULATING TOTAL IN PURCHASE====================
@@ -285,7 +285,7 @@ def get_data(filters):
                       'voucher_no': '-------',
                       'qty': '-------', 'rate': '-------', ',' 'amount': None}
     purchase_conversion_rate['amount'] = avg_conversion_rate
-
+    landed_cost_result = []
     # landed_cost_result.append(landed_cost_total_dict)
     landed_cost_result.append(total_cost_summary)
     landed_cost_result.append(profit_of_file)
